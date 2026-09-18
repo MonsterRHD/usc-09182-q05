@@ -1,7 +1,12 @@
 [project]
-name = "09182-q005
+name = "study-capacity-steward"
 version = "0.1.0"
+description = "研学体验容量管家：课程版本、场地、师傅技能、材料包与时段容量管理"
 requires-python = ">=3.11"
 
 [project.scripts]
 service = "service.main:run"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
