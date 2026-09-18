@@ -1,12 +1,25 @@
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import json, os
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == '/health':
-            body = json.dumps({'status':'ok'}).encode()
-            self.send_response(200); self.send_header('Content-Type','application/json'); self.send_header('Content-Length',str(len(body))); self.end_headers(); self.wfile.write(body)
-        else:
-            self.send_response(404); self.end_headers()
-    def log_message(self, *_): pass
-def run(): HTTPServer(('0.0.0.0', int(os.getenv('PORT','8000'))), Handler).serve_forever()
-if __name__ == '__main__': run()
+"""服务入口：默认使用 ./data/app.db（可用 DB_PATH 覆盖），重启后当天未结束课程可交接。"""
+
+import os
+
+from .api import make_server
+from .db import Store
+
+
+def run():
+    db_path = os.getenv("DB_PATH", os.path.join("data", "app.db"))
+    if db_path != ":memory:":
+        os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
+    store = Store(db_path)
+    port = int(os.getenv("PORT", "8000"))
+    print(f"研学体验容量管家 listening on :{port}, db={db_path}")
+    try:
+        make_server(store, port=port).serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        store.close()
+
+
+if __name__ == "__main__":
+    run()
